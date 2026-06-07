@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>소비기록 리포트</title>
+
+  <!-- Google Analytics placeholder -->
+  <!--
+  <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'GA_MEASUREMENT_ID');
+  </script>
+  -->
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #fff;
+      color: #222;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── 広告ロック画面 ── */
+    #ad-lock {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      z-index: 100;
+      padding: 24px;
+      transition: opacity 0.8s ease;
+    }
+
+    #ad-lock.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .report-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #111;
+      text-align: center;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    .report-title span {
+      color: #e63946;
+    }
+
+    /* ダミー広告枠 */
+    .ad-box {
+      width: 100%;
+      max-width: 480px;
+      height: 220px;
+      background: #f0f0f0;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+
+    .ad-label {
+      font-size: 0.7rem;
+      color: #aaa;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .ad-placeholder {
+      font-size: 1rem;
+      color: #bbb;
+      font-weight: 500;
+    }
+
+    /* カウントダウン */
+    .countdown-wrap {
+      text-align: center;
+    }
+
+    .countdown-text {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 8px;
+    }
+
+    .countdown-number {
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: #e63946;
+      line-height: 1;
+    }
+
+    .countdown-sub {
+      font-size: 0.8rem;
+      color: #999;
+      margin-top: 6px;
+    }
+
+    /* ── レポート画面 ── */
+    #report {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.8s ease;
+    }
+
+    #report.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .report-header {
+      background: #fff;
+      border-bottom: 1px solid #eee;
+      padding: 10px 16px;
+      font-size: 0.85rem;
+      color: #555;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .report-header strong {
+      color: #e63946;
+    }
+
+    #canva-frame {
+      flex: 1;
+      width: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 広告ロック画面 -->
+  <div id="ad-lock">
+    <p class="report-title"><span id="user-name">ゲスト</span> 님을 위한 소비기록 리포트</p>
+
+    <div class="ad-box">
+      <span class="ad-label">Advertisement</span>
+      <span class="ad-placeholder">広告スペース</span>
+    </div>
+
+    <div class="countdown-wrap">
+      <p class="countdown-text">レポートまであと</p>
+      <p class="countdown-number" id="timer">15</p>
+      <p class="countdown-sub">秒お待ちください</p>
+    </div>
+  </div>
+
+  <!-- レポート画面 -->
+  <div id="report">
+    <div class="report-header">
+      <strong id="report-name">ゲスト</strong> 님을 위한 소비기록 리포트
+    </div>
+    <iframe
+      id="canva-frame"
+      src="https://www.canva.com/design/DAHL4GebDtY/mITHQuyz5vAgI_Js9M58LQ/view?embed"
+      allowfullscreen
+      allow="fullscreen"
+    ></iframe>
+  </div>
+
+  <script>
+    // URLパラメータから名前を取得
+    const params = new URLSearchParams(window.location.search);
+    const name = params.get('name') || 'ゲスト';
+
+    document.getElementById('user-name').textContent = name;
+    document.getElementById('report-name').textContent = name;
+
+    // カウントダウン
+    let seconds = 15;
+    const timerEl = document.getElementById('timer');
+    const adLock = document.getElementById('ad-lock');
+    const report = document.getElementById('report');
+
+    const interval = setInterval(() => {
+      seconds--;
+      timerEl.textContent = seconds;
+
+      if (seconds <= 0) {
+        clearInterval(interval);
+        adLock.classList.add('hidden');
+        setTimeout(() => {
+          report.classList.add('visible');
+        }, 800);
+      }
+    }, 1000);
+  </script>
+
+</body>
+</html>
