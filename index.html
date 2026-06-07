@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -157,24 +157,24 @@
 
   <!-- 広告ロック画面 -->
   <div id="ad-lock">
-    <p class="report-title"><span id="user-name">ゲスト</span> 님을 위한 소비기록 리포트</p>
+    <p class="report-title"><span id="user-name">게스트</span> 님을 위한 소비기록 리포트</p>
 
     <div class="ad-box">
-      <span class="ad-label">Advertisement</span>
-      <span class="ad-placeholder">広告スペース</span>
+      <span class="ad-label">광고</span>
+      <span class="ad-placeholder">광고 공간</span>
     </div>
 
     <div class="countdown-wrap">
-      <p class="countdown-text">レポートまであと</p>
+      <p class="countdown-text">리포트까지</p>
       <p class="countdown-number" id="timer">15</p>
-      <p class="countdown-sub">秒お待ちください</p>
+      <p class="countdown-sub">초만 기다려 주세요</p>
     </div>
   </div>
 
   <!-- レポート画面 -->
   <div id="report">
     <div class="report-header">
-      <strong id="report-name">ゲスト</strong> 님을 위한 소비기록 리포트
+      <strong id="report-name">Guest</strong> 님을 위한 소비기록 리포트
     </div>
     <iframe
       id="canva-frame"
@@ -187,7 +187,7 @@
   <script>
     // URLパラメータから名前を取得
     const params = new URLSearchParams(window.location.search);
-    const name = params.get('name') || 'ゲスト';
+    const name = params.get('name') || '게스트';
 
     document.getElementById('user-name').textContent = name;
     document.getElementById('report-name').textContent = name;
