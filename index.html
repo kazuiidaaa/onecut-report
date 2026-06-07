@@ -172,11 +172,11 @@
   <!-- レポート画面 -->
   <div id="report">
     <div class="report-header">
-      <strong id="report-name">Guest</strong> 님을 위한 소비기록 리포트
+      
     </div>
     <iframe
       id="canva-frame"
-      src="https://www.canva.com/design/DAHL4GebDtY/mITHQuyz5vAgI_Js9M58LQ/view?embed"
+      src="https://wavelabo.my.canva.site/onecut-arts"
       allowfullscreen
       allow="fullscreen"
     ></iframe>
@@ -188,7 +188,6 @@
     const name = params.get('name') || '게스트';
 
     document.getElementById('user-name').textContent = name;
-    document.getElementById('report-name').textContent = name;
 
     // カウントダウン
     let seconds = 15;
