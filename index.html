@@ -178,10 +178,13 @@
       position: fixed;
       inset: 0;
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.8s ease;
+      background: #111;
+      padding: 24px;
     }
 
     #report.visible {
@@ -189,10 +192,46 @@
       pointer-events: all;
     }
 
-    #canva-frame {
-      flex: 1;
+    #story-container {
+      position: relative;
       width: 100%;
-      border: none;
+      max-width: 900px;
+      max-height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 18px;
+    }
+
+    #slider-img {
+      width: 100%;
+      max-height: 75vh;
+      object-fit: contain;
+      border-radius: 24px;
+      background: #111;
+      cursor: pointer;
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.35);
+    }
+
+    #story-overlay {
+      position: absolute;
+      inset: 20px 24px auto;
+      display: flex;
+      justify-content: flex-end;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    #story-progress {
+      background: rgba(17, 17, 17, 0.55);
+      color: #fdfbf7;
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      backdrop-filter: blur(8px);
     }
   </style>
 </head>
@@ -221,31 +260,90 @@
 
   <!-- レポート画面 -->
   <div id="report">
-    <iframe
-      id="canva-frame"
-      src="https://www.canva.com/design/DAHL4GebDtY/mITHQuyz5vAgI_Js9M58LQ/view?embed"
-      allowfullscreen
-      allow="fullscreen"
-    ></iframe>
+    <div id="story-container">
+      <div id="story-overlay">
+        <div id="story-progress"><span id="story-index">1 / 8</span></div>
+      </div>
+      <img id="slider-img" src="" alt="Story image" />
+      <script id="image-source-list" type="application/json">["images/1.png","images/2.png","images/3.png","images/4.png","images/5.png","images/6.png","images/7.png","images/8.png"]</script>
+    </div>
   </div>
 
   <script>
     // URLパラメータから名前を取得
     const params = new URLSearchParams(window.location.search);
     const name = params.get('name') || '게스트';
-
     document.getElementById('user-name').textContent = name;
 
-    // カウントダウン
     let seconds = 15;
     const timerEl = document.getElementById('timer');
     const adLock = document.getElementById('ad-lock');
     const report = document.getElementById('report');
+    const sliderImg = document.getElementById('slider-img');
+    const storyIndex = document.getElementById('story-index');
+    const storySourceList = document.getElementById('image-source-list');
+
+    let currentIndex = 0;
+    const images = [];
+
+    function updateImage() {
+      if (!images.length) {
+        sliderImg.src = '';
+        storyIndex.textContent = '0 / 0';
+        return;
+      }
+      sliderImg.src = images[currentIndex];
+      storyIndex.textContent = `${currentIndex + 1} / ${images.length}`;
+    }
+
+    function nextImage() {
+      if (!images.length) return;
+      currentIndex = (currentIndex + 1) % images.length;
+      updateImage();
+    }
+
+    function prevImage() {
+      if (!images.length) return;
+      currentIndex = (currentIndex - 1 + images.length) % images.length;
+      updateImage();
+    }
+
+    function loadHtmlImages() {
+      let sourceList = [];
+      try {
+        sourceList = JSON.parse(storySourceList.textContent.trim() || '[]');
+      } catch (error) {
+        console.warn('image-source-list の JSON が不正です:', error);
+      }
+      if (!Array.isArray(sourceList) || !sourceList.length) return;
+      images.length = 0;
+      sourceList.forEach(src => {
+        if (typeof src === 'string' && src.trim()) {
+          images.push(src.trim());
+        }
+      });
+      if (images.length) {
+        currentIndex = 0;
+        updateImage();
+      }
+    }
+
+    loadHtmlImages();
+
+    report.addEventListener('click', (event) => {
+      if (!images.length) return;
+      const rect = report.getBoundingClientRect();
+      const clickX = event.clientX - rect.left;
+      if (clickX <= rect.width * 0.25) {
+        prevImage();
+      } else {
+        nextImage();
+      }
+    });
 
     const interval = setInterval(() => {
       seconds--;
       timerEl.textContent = seconds;
-
       if (seconds <= 0) {
         clearInterval(interval);
         adLock.classList.add('hidden');
