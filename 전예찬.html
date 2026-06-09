@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>소비기록 리포트</title>
+
+<style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #fdfbf7;
+      color: #111;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── ブランド背景 ── */
+    #ad-lock {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top center, rgba(0,0,0,0.04) 2%, transparent 0%),
+                  radial-gradient(circle at 20% 80%, rgba(0,0,0,0.04) 2%, transparent 0%),
+                  radial-gradient(circle at 80% 20%, rgba(0,0,0,0.04) 2%, transparent 0%),
+                  #faf6ef;
+      background-size: 120px 120px;
+      z-index: 100;
+      padding: 32px;
+      transition: opacity 0.8s ease;
+    }
+
+    #ad-lock::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, #111 18%, transparent 19%),
+                        radial-gradient(circle, #111 18%, transparent 19%);
+      background-size: 140px 140px;
+      background-position: 0 0, 70px 70px;
+      opacity: 0.12;
+      pointer-events: none;
+    }
+
+    #ad-lock.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 40px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .brand-badge .dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #d4ff00;
+      box-shadow: 0 0 0 4px rgba(212,255,0,0.14);
+    }
+
+    .brand-badge span {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #111;
+    }
+
+    .report-title {
+      font-size: clamp(2.2rem, 5vw, 4.8rem);
+      font-weight: 900;
+      color: #111;
+      text-align: center;
+      line-height: 0.95;
+      max-width: 820px;
+      margin: 0 auto 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .ad-box {
+      width: 100%;
+      max-width: 520px;
+      min-height: 260px;
+      padding: 24px;
+      background: #ffffff;
+      border: 1px solid rgba(17, 17, 17, 0.08);
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 40px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.06);
+      position: relative;
+      z-index: 1;
+    }
+
+    .ad-label {
+      font-size: 0.78rem;
+      color: #777;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .ad-placeholder {
+      font-size: 1rem;
+      color: #999;
+      font-weight: 600;
+    }
+
+    .report-subtitle {
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: #444;
+      text-align: center;
+      max-width: 640px;
+      margin: 0 auto 40px;
+      position: relative;
+      z-index: 1;
+      line-height: 1.8;
+    }
+
+    .countdown-wrap {
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .countdown-text {
+      font-size: 0.95rem;
+      color: #555;
+      margin-bottom: 12px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .countdown-number {
+      font-size: 3.4rem;
+      font-weight: 900;
+      color: #111;
+      line-height: 1;
+    }
+
+    .countdown-sub {
+      font-size: 0.95rem;
+      color: #666;
+      margin-top: 8px;
+      letter-spacing: 0.02em;
+    }
+
+    /* ── レポート画面 ── */
+    #report {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.8s ease;
+      background: #000;
+      padding: 0;
+    }
+
+    #report.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    #story-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      padding: 0;
+    }
+
+    #slider-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 0;
+      background: #000;
+      cursor: pointer;
+      box-shadow: none;
+    }
+
+    #story-overlay {
+      position: absolute;
+      inset: 20px 24px auto;
+      display: flex;
+      justify-content: flex-end;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    #story-progress {
+      background: rgba(17, 17, 17, 0.55);
+      color: #fdfbf7;
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      backdrop-filter: blur(8px);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 広告ロック画面 -->
+  <div id="ad-lock">
+    <div class="brand-badge">
+      <span class="dot"></span>
+      <span>OneCut</span>
+    </div>
+
+    <p class="report-title"><span id="user-name">게스트</span> 님을 위한 소비기록 리포트</p>
+
+    <div class="ad-box">
+      <span class="ad-label">광고</span>
+      <span class="ad-placeholder">광고 공간</span>
+    </div>
+
+    <div class="countdown-wrap">
+      <p class="countdown-text">리포트까지</p>
+      <p class="countdown-number" id="timer">15</p>
+      <p class="countdown-sub">초만 기다려 주세요</p>
+    </div>
+  </div>
+
+  <!-- レポート画面 -->
+  <div id="report">
+    <div id="story-container">
+      <div id="story-overlay">
+        <div id="story-progress"><span id="story-index">1 / 8</span></div>
+      </div>
+      <img id="slider-img" src="" alt="Story image" />
+      <script id="image-source-list" type="application/json">["images/전예찬-1.png","images/전예찬-2.png","images/전예찬-3.png","images/전예찬-4.png","images/전예찬-5.png","images/전예찬-6.png","images/전예찬-7.png","images/전예찬-8.png"]</script>
+    </div>
+  </div>
+
+  <script>
+    // URLパラメータから名前を取得
+    const params = new URLSearchParams(window.location.search);
+    const name = params.get('name') || '전예찬';
+    document.getElementById('user-name').textContent = name;
+
+    let seconds = 15;
+    const timerEl = document.getElementById('timer');
+    const adLock = document.getElementById('ad-lock');
+    const report = document.getElementById('report');
+    const sliderImg = document.getElementById('slider-img');
+    const storyIndex = document.getElementById('story-index');
+    const storySourceList = document.getElementById('image-source-list');
+
+    let currentIndex = 0;
+    const images = [];
+
+    function updateImage() {
+      if (!images.length) {
+        sliderImg.src = '';
+        storyIndex.textContent = '0 / 0';
+        return;
+      }
+      sliderImg.src = images[currentIndex];
+      storyIndex.textContent = `${currentIndex + 1} / ${images.length}`;
+    }
+
+    function nextImage() {
+      if (!images.length) return;
+      currentIndex = (currentIndex + 1) % images.length;
+      updateImage();
+    }
+
+    function prevImage() {
+      if (!images.length) return;
+      currentIndex = (currentIndex - 1 + images.length) % images.length;
+      updateImage();
+    }
+
+    function loadHtmlImages() {
+      let sourceList = [];
+      try {
+        sourceList = JSON.parse(storySourceList.textContent.trim() || '[]');
+      } catch (error) {
+        console.warn('image-source-list の JSON が不正です:', error);
+      }
+      if (!Array.isArray(sourceList) || !sourceList.length) return;
+      images.length = 0;
+      sourceList.forEach(src => {
+        if (typeof src === 'string' && src.trim()) {
+          images.push(src.trim());
+        }
+      });
+      if (images.length) {
+        currentIndex = 0;
+        updateImage();
+      }
+    }
+
+    loadHtmlImages();
+
+    report.addEventListener('click', (event) => {
+      if (!images.length) return;
+      const rect = report.getBoundingClientRect();
+      const clickX = event.clientX - rect.left;
+      if (clickX <= rect.width * 0.25) {
+        prevImage();
+      } else {
+        nextImage();
+      }
+    });
+
+    const interval = setInterval(() => {
+      seconds--;
+      timerEl.textContent = seconds;
+      if (seconds <= 0) {
+        clearInterval(interval);
+        adLock.classList.add('hidden');
+        setTimeout(() => {
+          report.classList.add('visible');
+        }, 800);
+      }
+    }, 1000);
+  </script>
+
+</body>
+</html>
